@@ -13,6 +13,7 @@ SUBDIRS +=     \
 #    grab24     \
     adoptcolor \
     fileloader \
+    focus_stack \
     softrender  \
     raytracerender   \
 #    stereo_generator \
