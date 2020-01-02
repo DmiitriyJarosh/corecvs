@@ -52,6 +52,7 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
     int i, j;
 
     AbstractBuffer<double> temp(imageSize);
+    pair<AbstractBuffer<double> *, AbstractBuffer<double> *> coefftemp;
     temp.fillWith(0);
     for (size_t k = 0; k < imageStack.size(); k++) {
         DpImage *slice = imageStack[k]->getChannelDp(ImageChannel::GRAY);
@@ -63,7 +64,7 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
                 slicedImage->element(i + b, j + a) = slice->element(i, j);
             }
         }
-        pair<AbstractBuffer<double> *, AbstractBuffer<double> *> coefftemp = analysis(slicedImage, 11, 6);
+        coefftemp = analysis(slicedImage, 11, 6);
         coefftempRe = coefftemp.first;
         coefftempIm = coefftemp.second;
         for (i = 0; i < my; i++) {
@@ -74,7 +75,6 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
                 oldval = temp.element(i, j);
                 if (oldval < newval) {
                     temp.element(i, j) = newval;
-                    //heightMap.element(i, j) = k;
                     resRe->element(i, j) = tempvalRe;
                     resIm->element(i, j) = tempvalIm;
                 }
@@ -84,6 +84,8 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
         delete(slicedImage);
         delete(coefftempRe);
         delete(coefftempIm);
+        /*delete(coefftemp.first);
+        delete(coefftemp.second);*/
 
     }
 
@@ -107,7 +109,11 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
           
         }
     }
-    delete(coefftempRe);	
+    delete(coefftempRe);
+    delete(resRe);
+    delete(resIm);
+    for (i = 0; i < stack.size(); i++)
+        delete (stack[i]);
 }
 
 
@@ -349,47 +355,47 @@ void merge_1D(double const * vin, int vin_size, double * vout, double const * h,
 
     double vinL[n];
     double vinH[n];
-    for (int k=0; k<n; k++)	{
-        vinL[k]=0;
-        vinH[k]=0;
+    for (int k = 0; k < n; k++)	{
+        vinL[k] = 0;
+        vinH[k] = 0;
     }
 
-    for (int k=0; k<n2; k++)	{
-        vinL[2*k] = vin[k];
-        vinH[2*k] = vin[k + n2];
+    for (int k = 0; k < n2; k++)	{
+        vinL[2 * k] = vin[k];
+        vinH[2 * k] = vin[k + n2];
     }
 
     // filtering
 
-    for (int i=0; i<n; i++)	{
+    for (int i = 0; i < n; i++)	{
         pix = 0.0;
-        for (int k=0;k<nh;k++) {					// Low pass part
-            j1 = i - k + (nh/2);
-            if (j1<0) {							// Periodic conditions
-                while (j1<n) j1 = n+j1;
+        for (int k = 0;k < nh; k++) {					// Low pass part
+            j1 = i - k + (nh / 2);
+            if (j1 < 0) {							// Periodic conditions
+                while (j1 < n) j1 = n+j1;
                 j1 = (j1) % n;
             }
-            if (j1>=n) {						// Periodic conditions
+            if (j1 >= n) {						// Periodic conditions
                 j1 = (j1) % n;
             }
-            pix = pix + h[k]*vinL[j1];
+            pix = pix + h[k] * vinL[j1];
         }
         vout[i] = pix;
     }
 
 
-    for (int i=0; i<n; i++)	{
+    for (int i = 0; i < n; i++)	{
         pix = 0.0;
-        for (int k=0; k<ng; k++) {					// High pass part
-            j1 = i - k + (ng/2);
-            if (j1<0) {							// Periodic conditions
-                while (j1<n) j1 = n+j1;
+        for (int k = 0; k < ng; k++) {					// High pass part
+            j1 = i - k + (ng / 2);
+            if (j1 < 0) {							// Periodic conditions
+                while (j1 < n) j1 = n + j1;
                 j1 = (j1) % n;
             }
-            if (j1>=n) {						// Periodic conditions
+            if (j1 >= n) {						// Periodic conditions
                 j1 = (j1) % n;
             }
-            pix = pix + g[k]*vinH[j1];
+            pix = pix + g[k] * vinH[j1];
         }
         vout[i] = vout[i] + pix;
     }
@@ -431,7 +437,7 @@ AbstractBuffer<double> * ComplexWavelet::merge(AbstractBuffer<double> * in, int 
     if (ny > 1 ) {
         double * colin = new double[ny];
         double * colout = new double[ny];
-        for (int x=0; x<nx; x++) {
+        for (int x = 0; x < nx; x++) {
             for (int j = 0; j < ny; j++) {
                 colin[j] = in->element(j, x);
             }
@@ -562,4 +568,8 @@ AbstractBuffer<double> * ComplexWavelet::synthesis(AbstractBuffer<double> * inRe
     }
     delete(outIm);
     return outRe;
+}
+
+void test() {
+
 }
