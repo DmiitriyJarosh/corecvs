@@ -1,5 +1,6 @@
 #include <float.h>
 #include <cmath>
+#include <fstream>
 
 #include "complexWavelet.h"
 #include "imageStack.h"
@@ -43,7 +44,6 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
     AbstractBuffer<double> buffer(imageSize);
     AbstractBuffer<double> * resRe = new AbstractBuffer<double>(imageSize);
     AbstractBuffer<double> * resIm = new AbstractBuffer<double>(imageSize);
-    //AbstractBuffer<int> heightMap(imageSize);
     AbstractBuffer<double> * coefftempRe;
     AbstractBuffer<double> * coefftempIm;
     vector<DpImage *> stack;
@@ -84,8 +84,6 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
         delete(slicedImage);
         delete(coefftempRe);
         delete(coefftempIm);
-        /*delete(coefftemp.first);
-        delete(coefftemp.second);*/
 
     }
 
@@ -112,6 +110,8 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
     delete(coefftempRe);
     delete(resRe);
     delete(resIm);
+    //delete(coefftemp.first);
+    //delete(coefftemp.second);
     for (i = 0; i < stack.size(); i++)
         delete (stack[i]);
 }
@@ -128,8 +128,8 @@ pair<AbstractBuffer<double> *, AbstractBuffer<double> *> ComplexWavelet::analysi
     int ny = nyfine;
 
     // Declare the object image
-    AbstractBuffer<double> * sub1 = new AbstractBuffer<double>(sizeIn);
-    AbstractBuffer<double> * sub2 = new AbstractBuffer<double>(sizeIn);
+    AbstractBuffer<double> * sub1;
+    AbstractBuffer<double> * sub2;
     AbstractBuffer<double> * sub3;
     AbstractBuffer<double> * sub4;
     AbstractBuffer<double> * subim;
@@ -174,6 +174,8 @@ pair<AbstractBuffer<double> *, AbstractBuffer<double> *> ComplexWavelet::analysi
     ny = ny / 2;
 
     for ( int i = 1; i < n; i++) {
+        if (nx == 0 || ny == 0)
+            break;
 
         // Create a new image array of size [nx,ny]
         delete(subre);
@@ -206,6 +208,10 @@ pair<AbstractBuffer<double> *, AbstractBuffer<double> *> ComplexWavelet::analysi
             }
         }
 
+        delete(sub1);
+        delete(sub2);
+        delete(sub3);
+        delete(sub4);
 
 
         sub1 = split(subre, re, im);
@@ -279,7 +285,10 @@ void split_1D(double const * vin, int vin_size, double * vout, double const * h,
         }
         voutH[i] = pix;
     }
-
+    if (n2 == 0) {
+        vout[0] = voutH[0];
+        return;
+    }
     for (int k = 0; k < n2; k++)
         vout[k] = voutL[2 * k];
     for (int k = n2; k < n; k++) {
@@ -506,6 +515,8 @@ AbstractBuffer<double> * ComplexWavelet::synthesis(AbstractBuffer<double> * inRe
 
     // From fine to coarse main loop
     for (int i = 0; i < n; i++) {
+        if (nx == 0 || ny == 0)
+            break;
     // Create a new image array of size [nx,ny]
         subre = new AbstractBuffer<double>(nx, ny);
         subim = new AbstractBuffer<double>(nx, ny);
@@ -571,5 +582,18 @@ AbstractBuffer<double> * ComplexWavelet::synthesis(AbstractBuffer<double> * inRe
 }
 
 void test() {
-
+    cout << "Testing wavelet splitting" << endl;
+    int nx = 128;
+    int ny = 128;
+    AbstractBuffer<double> in(nx, ny);
+    ifstream inputFile("subre.txt");
+    double current_number = 0.0;
+    for (int i = 0; i < ny; i++) {
+        for (int j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            in.element(i, j) = current_number;
+        }
+    }
+    cout << "done";
+    inputFile.close();
 }

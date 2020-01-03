@@ -12,7 +12,7 @@ public:
     ComplexWavelet(){}
     void doStacking(vector<corecvs::RGB24Buffer*> & imageStack, corecvs::RGB24Buffer * result) override;
     ~ComplexWavelet() override {}
-    //static void test() {}
+    static void test() {}
 
 private:
     static corecvs::AbstractBuffer<double> * merge(corecvs::AbstractBuffer<double> * in, int type1, int type2);
