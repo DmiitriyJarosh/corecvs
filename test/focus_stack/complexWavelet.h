@@ -7,7 +7,7 @@
 using namespace std;
 
 /**
- *       This class is an implementation of pixel based complex wavelets for extended depth-of-field algorithm.
+ *       This class is an implementation of complex wavelets for extended depth-of-field algorithm.
  *    Algorithm first extends all images of stack to the size of power of 2 if it is not. The original images are saved
  *    to new stack for the purpose of further selection of pixels to make the final result image.
  *    After extending images (if images are multichannel)the next step is to make multichannel conversion to prepare
@@ -32,8 +32,7 @@ private:
     /**
     *    Makes one iteration of the inverse wavelet transformation of an image.
     *    The algorithm uses separations of the wavelet transformation.
-    *    The result of the computation is put into AbstractBuffer<double> calling
-    *    this method.
+    *    The result of the computation is returned in AbstractBuffer<double>.
     *    @param in	representation of image in pixels
     *    @param type1 a type for double 1D vector for lowpass filter
     *    @param type2 a type for double 1D vector for highpass filter
@@ -58,24 +57,24 @@ private:
     **/
     static pair<corecvs::AbstractBuffer<double> *, corecvs::AbstractBuffer<double> *> analysis(corecvs::DpImage * in);
     /**
-    *    This method is intended for for subtracting two image vectors values.
+    *    This method is intended for subtracting two images elementwise.
     *    @param im1	 image representation in 2D vector
     *    @param im2	 image representation in 2D vector
     *    @return im1 = im1 - im2
     **/
     static void subtract(corecvs::AbstractBuffer<double> * im1, corecvs::AbstractBuffer<double> * im2);
     /**
-    *    This method is intended for adding two image vectors values.
+    *    This method is intended for adding two images elementwise.
     *    @param im1	 image representation in 2D vector
     *    @param im2	 image representation in 2D vector
     *    @return im1 = im1 + im2
     **/
     static void add(corecvs::AbstractBuffer<double> * im1, corecvs::AbstractBuffer<double> * im2);
     /**
-    *    Performs an inverse wavelet transformation of image.
-    *    The size of image should be interger factor of 2 at the power n.
+    *    Performs an inverse wavelet transformation of the image.
+    *    The size of image should be integer factor of 2 at the power n.
     *    The input is the result of a wavelet transformation.
-    *    The result is the reconstruction of image.
+    *    The result is the reconstruction of the image.
     *    @param inRe the real part of the wavelets coefficients
     *    @param inIm the imaginary part of the wavelets coefficients
     *    @return the reconstructed image

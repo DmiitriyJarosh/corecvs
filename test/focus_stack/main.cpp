@@ -25,10 +25,8 @@ void printUsage()
 int main(int argc, char *argv[])
 {
     if (argc != 3) {
-        if  (argc != 4) {
-            printUsage();
-            return 1;
-        }
+        printUsage();
+        return 1;
     }
 
 #ifdef WITH_LIBJPEG
@@ -39,12 +37,6 @@ int main(int argc, char *argv[])
     LibpngFileReader::registerMyself();
     SYNC_PRINT(("Libpng support on\n"));
 #endif
-
-    //tested with image stack "128" located in focus_stack folder
-    if (argc == 4) {
-        ComplexWavelet::test();
-        return 0;
-    }
 
     ImageStack * imageStack = ImageStack::loadStack(argv[1]);
     if (imageStack == nullptr)
