@@ -88,7 +88,7 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
     }
 
 
-    coefftempRe = synthesis(resRe, resIm, 11);
+    coefftempRe = synthesis(resRe, resIm);
     for (i = 0; i < ny; i++) {
         for (j = 0; j < nx; j++) {
             double tmp = std::numeric_limits<double>::max();
@@ -110,8 +110,6 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
     delete(coefftempRe);
     delete(resRe);
     delete(resIm);
-    //delete(coefftemp.first);
-    //delete(coefftemp.second);
     for (i = 0; i < stack.size(); i++)
         delete (stack[i]);
 }
@@ -243,6 +241,18 @@ pair<AbstractBuffer<double> *, AbstractBuffer<double> *> ComplexWavelet::analysi
     return {outRe, outIm};
 }
 
+
+ /**
+ *    Performs one iteration of the wavelet transformation of a 1D vector
+ *    using the wavelet transformation.
+ *    The output vector has the same size of the input vector and it
+ *    contains first the low pass part of the wavelet transform and then
+ *    the high pass part of the wavelet transformation.
+ *    @param vin input, a double 1D vector
+ *    @param vout output, a double 1D vector
+ *    @param h	input, a double 1D vector, lowpass filter
+ *    @param g	input, a double 1D vector, highpass filter
+ **/
 void split_1D(double * vin, int vin_size, double * vout, double h[], double g[]) {
     int n  = vin_size;
     int n2 = n / 2;
@@ -352,6 +362,18 @@ AbstractBuffer<double> * ComplexWavelet::split(AbstractBuffer<double> * in, int 
     return out;
 }
 
+ /**
+ *    Performs one iteration of the inverse wavelet transformation of a
+ *    1D vector using the Spline wavelet transformation.
+ *    The output vector has the same size of the input vector and it
+ *    contains the reconstruction of the input signal, which saves to vout.
+ *    The input constains lowpass part of the wavelet
+ *    transform and highpass part of the wavelet transformation.
+ *    @param vin input, a double 1D vector
+ *    @param vout output, a double 1D vector
+ *    @param h	input, a double 1D vector, lowpass filter
+ *    @param g	input, a double 1D vector, highpass filter
+ **/
 void merge_1D(double const * vin, int vin_size, double * vout, double const * h, int h_size, double * g, int g_size) {
 
     int n  = vin_size;
@@ -490,13 +512,13 @@ void ComplexWavelet::add(AbstractBuffer<double> * im1, AbstractBuffer<double> * 
     }
 }
 
-AbstractBuffer<double> * ComplexWavelet::synthesis(AbstractBuffer<double> * inRe, AbstractBuffer<double> * inIm, int n) {
+AbstractBuffer<double> * ComplexWavelet::synthesis(AbstractBuffer<double> * inRe, AbstractBuffer<double> * inIm) {
     // Compute the size to the fine and coarse levels
-    int div = (int) pow(2.0, (double)(n-1));
+    int div = (int) pow(2.0, 10.0);
     int nxcoarse = inRe->getSize().x() / div;
     int nycoarse = inRe->getSize().y() / div;
 
-    // Initialisazion
+    // Initialisation
     int nx = nxcoarse;
     int ny = nycoarse;
 
@@ -515,7 +537,7 @@ AbstractBuffer<double> * ComplexWavelet::synthesis(AbstractBuffer<double> * inRe
     int im = 1;
 
     // From fine to coarse main loop
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < 11; i++) {
         if (nx == 0 || ny == 0)
             break;
     // Create a new image array of size [nx,ny]
