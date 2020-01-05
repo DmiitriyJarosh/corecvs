@@ -26,7 +26,6 @@ public:
     ComplexWavelet(){}
     void doStacking(vector<corecvs::RGB24Buffer*> & imageStack, corecvs::RGB24Buffer * result) override;
     ~ComplexWavelet() override {}
-    static void test();
 
 private:
     /**

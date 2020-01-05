@@ -300,8 +300,9 @@ void split_1D(double * vin, int vin_size, double * vout, double h[], double g[])
         vout[0] = voutH[0];
         return;
     }
-    for (int k = 0; k < n2; k++)
+    for (int k = 0; k < n2; k++) {
         vout[k] = voutL[2 * k];
+    }
     for (int k = n2; k < n; k++) {
         vout[k] = voutH[2 * k - n];
     }
@@ -345,7 +346,7 @@ AbstractBuffer<double> * ComplexWavelet::split(AbstractBuffer<double> * in, int 
         double * colout = new double[ny]{0};
         for (int x = 0; x < nx; x++) {
             for (int j = 0; j < ny; j++) {
-                colin[j] = in->element(j, x);
+                colin[j] = out->element(j, x);
             }
             if (type2 == 0)
                 split_1D(colin, ny, colout, wf.h, wf.g);
@@ -472,7 +473,7 @@ AbstractBuffer<double> * ComplexWavelet::merge(AbstractBuffer<double> * in, int 
         double * colout = new double[ny];
         for (int x = 0; x < nx; x++) {
             for (int j = 0; j < ny; j++) {
-                colin[j] = in->element(j, x);
+                colin[j] = out->element(j, x);
             }
             if (type2 == 0)
                 merge_1D(colin, ny, colout, wf.h, wf.g);
