@@ -45,6 +45,8 @@ void ComplexWavelet::doStacking(vector<RGB24Buffer*> & imageStack, RGB24Buffer *
     AbstractBuffer<double> buffer(imageSize);
     AbstractBuffer<double> * resRe = new AbstractBuffer<double>(imageSize);
     AbstractBuffer<double> * resIm = new AbstractBuffer<double>(imageSize);
+    resRe->fillWith(0);
+    resIm->fillWith(0);
     AbstractBuffer<double> * coefftempRe;
     AbstractBuffer<double> * coefftempIm;
     vector<DpImage *> stack;
@@ -238,7 +240,6 @@ pair<AbstractBuffer<double> *, AbstractBuffer<double> *> ComplexWavelet::analysi
         ny = ny / 2;
     }
     delete(subre);
-    cout << "analysis done" << endl;
     return {outRe, outIm};
 }
 
@@ -447,7 +448,7 @@ AbstractBuffer<double> * ComplexWavelet::merge(AbstractBuffer<double> * in, int 
         double * rowout = new double[nx];
         for (int y=0; y<ny; y++) {
             for (int j = 0; j < nx; j++) {
-                rowin[j] = in->element(y, j);
+                rowin[j] = in->element(j, y);
             }
             if (type1 == 0)
                 merge_1D(rowin, nx, rowout, wf.h, wf.g);
@@ -457,7 +458,7 @@ AbstractBuffer<double> * ComplexWavelet::merge(AbstractBuffer<double> * in, int 
 
 
             for (int j = 0; j < nx; j++) {
-                out->element(y, j) = rowout[j];
+                out->element(j, y) = rowout[j];
             }
         }
         delete[](rowin);
@@ -473,7 +474,7 @@ AbstractBuffer<double> * ComplexWavelet::merge(AbstractBuffer<double> * in, int 
         double * colout = new double[ny];
         for (int x = 0; x < nx; x++) {
             for (int j = 0; j < ny; j++) {
-                colin[j] = out->element(j, x);
+                colin[j] = out->element(x, j);
             }
             if (type2 == 0)
                 merge_1D(colin, ny, colout, wf.h, wf.g);
@@ -482,7 +483,7 @@ AbstractBuffer<double> * ComplexWavelet::merge(AbstractBuffer<double> * in, int 
                 merge_1D(colin, ny, colout, wf.hi, wf.gi);
 
             for (int j = 0; j < ny; j++) {
-                out->element(j, x) = colout[j];
+                out->element(x, j) = colout[j];
             }
         }
         delete[](colin);
@@ -604,4 +605,253 @@ AbstractBuffer<double> * ComplexWavelet::synthesis(AbstractBuffer<double> * inRe
     }
     delete(outIm);
     return outRe;
+}
+
+bool ComplexWavelet::testSplit() {
+    int nx = 128;
+    int ny = 128;
+    int i, j;
+    AbstractBuffer<double> * in = new AbstractBuffer<double>(nx, ny);
+    ifstream inputFile;
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/subre.txt");
+    double current_number = 0.0;
+    for (i = 0; i < ny; i++) {
+        for (j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            in->element(i, j) = current_number;
+        }
+    }
+    inputFile.close();
+    inputFile.clear();
+    AbstractBuffer<double> * out;
+    out = split(in, 0, 0);
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/sub1.txt");
+    for (i = 0; i < ny; i++) {
+        for (j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            if (abs(out->element(i, j) - current_number) > 0.5) {
+                inputFile.close();
+                inputFile.clear();
+                delete(in);
+                delete(out);
+                return false;
+            }
+        }
+    }
+    inputFile.close();
+    inputFile.clear();
+    delete(in);
+    delete(out);
+    return true;
+}
+
+bool ComplexWavelet::testSplit_1D() {
+    double * rowin = new double[128]{177.0, 176.0, 177.0, 175.0, 172.0, 172.0, 172.0, 172.0, 172.0, 173.0, 174.0, 172.0, 168.0, 162.0, 159.0, 157.0, 156.0, 157.0, 159.0, 160.0, 161.0, 160.0, 159.0, 158.0, 155.0, 152.0, 153.0, 155.0, 155.0, 156.0, 154.0, 154.0, 153.0, 153.0, 151.0, 151.0, 151.0, 148.0, 144.0, 140.0, 136.0, 133.0, 138.0, 146.0, 149.0, 147.0, 143.0, 134.0, 127.0, 129.0, 126.0, 125.0, 127.0, 119.0, 117.0, 116.0, 116.0, 116.0, 117.0, 116.0, 116.0, 116.0, 116.0, 116.0, 117.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 115.0, 115.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 117.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 115.0, 115.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 115.0, 116.0, 115.0, 115.0, 115.0, 115.0, 115.0, 115.0, 115.0, 115.0, 114.0, 115.0, 115.0, 115.0, 114.0, 114.0, 114.0, 114.0, 114.0, 114.0, 114.0, 114.0, 114.0};
+    double * rowout = new double[128]{-0.17116329920000162, 6.504205369600001, -0.256744948799998, -0.7702348463999993, -0.08558164959999992, 1.0269797951999973, 0.42790824800000493, -1.1125614448000043, -0.5134898975999995, -3.552713678800501E-15, 0.5134898976000066, 0.08558164959999637, 0.5134898975999995, -0.855816496000001, 0.08558164959999992, 0.3423265983999979, -0.0855816496000017, -1.7763568394002505E-15, 0.08558164959999992, 1.1125614448000025, -2.909776086399999, -0.8558164959999974, 5.3916439248, -0.42790824800000316, -2.9097760863999973, 1.1125614447999972, 0.2567449488000033, -1.0269797952000026, -0.17116329919999806, 0.25674494879999976, -0.3423265983999979, 0.17116329919999806, 1.7763568394002505E-15, 1.7763568394002505E-15, 0.0855816496000017, -0.08558164959999814, 0.0, 0.0, 0.0, 0.08558164959999992, 0.0, -0.17116329920000162, 0.0, -1.7763568394002505E-15, 0.17116329919999984, -0.08558164959999814, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.17116329919999984, -0.17116329919999984, 0.0, 0.0, 0.0, 0.08558164959999992, 0.0, -0.256744948799998, 0.3423265983999997, -0.17116329919999984, 0.08558164959999992, -5.4772255744, 10.783287849599999, -5.134898975999999, -0.5990715471999977, 0.25674494879999976, 0.25674494879999976, -1.7763568394002505E-15, -0.256744948799998, -0.08558164959999814, 0.0, 0.3423265983999997, -0.17116329919999984, 0.25674494879999976, -0.3423265983999997, -0.17116329919999806, 0.4279082479999996, -0.17116329919999806, 0.08558164959999814, -0.3423265983999979, 0.5990715471999994, -0.2567449487999962, -1.5404696928000003, 2.7386127872000046, -0.08558164959999992, -2.824194436800001, 1.711632992000002, 0.7702348463999975, -1.4548880431999986, 0.5134898975999995, 0.17116329919999806, -0.25674494879999976, 0.34232659840000146, -0.34232659840000146, 0.3423265983999979, -0.17116329920000162, -0.08558164959999814, 0.08558164959999814, 0.0, 0.0, 0.0, -0.08558164959999992, 0.17116329919999984, -1.7763568394002505E-15, -0.17116329919999984, -1.7763568394002505E-15, 0.17116329919999984, -0.08558164959999814, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.08558164959999992, -0.17116329919999984, 0.08558164959999814, 0.0, 0.0, 0.08558164959999992, -5.4772255744};
+    double res_rowout1[128] = {0.08558164959999992, 5.819552172800002, -0.25674494880000154, -0.256744948799998, -0.25674494879999976, 0.8558164959999992, 1.0269797952000026, -0.9413981455999991, -0.9413981456000009, -0.17116329920000162, 0.5990715472000048, 0.3423265983999979, 0.17116329919999806, -1.1125614447999972, 0.4279082480000014, 0.25674494879999976, 0.0, -0.0855816496000017, 0.6846531967999994, 0.5134898976000013, -0.9413981455999991, -2.4818678384000012, 2.481867838400003, 2.0539595904, -1.9683779408000017, -0.25674494880000154, 1.1125614448000025, -1.026979795199999, -0.42790824800000316, 0.17116329919999984, -0.08558164959999814, -0.08558164959999992, 0.17116329919999984, -0.08558164959999814, 0.0, 0.0, 0.08558164959999992, -0.08558164959999992, -0.0855816496000017, 0.08558164959999814, 0.0, -0.08558164959999992, 0.17116329919999984, -0.08558164959999814, 0.0, 0.0, 0.0, 0.08558164959999992, -0.08558164959999992, -0.0855816496000017, 0.08558164959999814, 0.0, 0.08558164959999992, 0.0, -0.0855816496000017, 0.0, 0.0, 0.08558164959999992, -0.17116329919999984, 0.25674494880000154, -0.17116329919999984, 0.0, 0.0, -5.3916439248, 10.6977062, -4.963735676800001, -0.5990715471999977, 0.256744948799998, -0.08558164959999992, 0.5134898975999995, -0.5134898975999995, -0.08558164960000347, -0.08558164959999814, 0.34232659840000146, 0.0855816496000017, -5.329070518200751E-15, -0.5134898975999977, 0.4279082480000014, 0.08558164959999814, -0.25674494879999976, 0.17116329919999984, -0.256744948799998, 0.5134898975999995, -0.3423265983999979, -0.7702348464000028, 0.9413981456000027, 0.4279082480000014, -0.3423265983999979, -0.5990715471999994, -0.08558164959999814, 0.7702348464000028, -0.5134898976000031, 0.08558164959999992, 0.17116329919999984, -0.08558164959999814, -0.08558164959999992, 0.17116329919999984, -0.08558164959999814, 0.0, 0.0, 0.08558164959999992, -0.25674494879999976, 0.25674494880000154, -0.08558164959999814, 0.0, 0.08558164959999992, -0.17116329919999984, 0.08558164959999814, 0.0, 0.0, 0.0, 0.08558164959999992, -0.25674494879999976, 0.25674494880000154, -0.08558164959999814, 0.0, -0.08558164959999992, 0.17116329919999984, -0.0855816496000017, 0.0, 0.0, -0.08558164959999992, 0.17116329919999984, -0.0855816496000017, 0.0, 0.0, 0.0, -5.3916439248};
+    ComplexWaveFilter wf;
+    split_1D(rowin, 128, rowout,  wf.hi, wf.gi);
+    for (int i = 0; i < 128; i++) {
+        if (abs(rowout[i] - res_rowout1[i]) > 0.5) {
+            delete[](rowin);
+            delete[](rowout);
+            return false;
+        }
+    }
+    delete[](rowin);
+    delete[](rowout);
+    return true;
+}
+
+bool ComplexWavelet::testAnalysis() {
+    int nx = 128;
+    int ny = 128;
+    AbstractContiniousBuffer<double> * input = new AbstractContiniousBuffer<double>(nx, ny);
+    ifstream inputFile;
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/in.txt");
+    double current_number;
+    for (int i = 0; i < ny; i++) {
+        for (int j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            input->element(i, j) = current_number;
+        }
+    }
+    pair<AbstractBuffer<double> *, AbstractBuffer<double> *> analyse = analysis(input);
+    inputFile.close();
+    inputFile.clear();
+    delete(input);
+    AbstractBuffer<double> * coeffRe = analyse.first;
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/outRe.txt");
+    for (int i = 0; i < ny; i++) {
+        for (int j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            if (abs(coeffRe->element(i, j) - current_number) > 0.5) {
+                inputFile.close();
+                inputFile.clear();
+                delete(coeffRe);
+                return false;
+            }
+        }
+    }
+
+    inputFile.close();
+    inputFile.clear();
+    delete(coeffRe);
+    AbstractBuffer<double> * coeffIm = analyse.second;
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/outIm.txt");
+    for (int i = 0; i < ny; i++) {
+        for (int j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            if (abs(coeffIm->element(i, j) - current_number) > 0.5) {
+                inputFile.close();
+                inputFile.clear();
+                delete(coeffIm);
+                return false;
+            }
+        }
+    }
+    inputFile.close();
+    inputFile.clear();
+    delete(coeffIm);
+    return true;
+}
+
+bool ComplexWavelet::testMerge_1D() {
+    double * rowin = new double[128]{177.0, 176.0, 177.0, 175.0, 172.0, 172.0, 172.0, 172.0, 172.0, 173.0, 174.0, 172.0, 168.0, 162.0, 159.0, 157.0, 156.0, 157.0, 159.0, 160.0, 161.0, 160.0, 159.0, 158.0, 155.0, 152.0, 153.0, 155.0, 155.0, 156.0, 154.0, 154.0, 153.0, 153.0, 151.0, 151.0, 151.0, 148.0, 144.0, 140.0, 136.0, 133.0, 138.0, 146.0, 149.0, 147.0, 143.0, 134.0, 127.0, 129.0, 126.0, 125.0, 127.0, 119.0, 117.0, 116.0, 116.0, 116.0, 117.0, 116.0, 116.0, 116.0, 116.0, 116.0, 117.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 115.0, 115.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 117.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 115.0, 115.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 116.0, 115.0, 116.0, 115.0, 115.0, 115.0, 115.0, 115.0, 115.0, 115.0, 115.0, 114.0, 115.0, 115.0, 115.0, 114.0, 114.0, 114.0, 114.0, 114.0, 114.0, 114.0, 114.0, 114.0};
+    double * rowout = new double[128]{-0.17116329920000162, 6.504205369600001, -0.256744948799998, -0.7702348463999993, -0.08558164959999992, 1.0269797951999973, 0.42790824800000493, -1.1125614448000043, -0.5134898975999995, -3.552713678800501E-15, 0.5134898976000066, 0.08558164959999637, 0.5134898975999995, -0.855816496000001, 0.08558164959999992, 0.3423265983999979, -0.0855816496000017, -1.7763568394002505E-15, 0.08558164959999992, 1.1125614448000025, -2.909776086399999, -0.8558164959999974, 5.3916439248, -0.42790824800000316, -2.9097760863999973, 1.1125614447999972, 0.2567449488000033, -1.0269797952000026, -0.17116329919999806, 0.25674494879999976, -0.3423265983999979, 0.17116329919999806, 1.7763568394002505E-15, 1.7763568394002505E-15, 0.0855816496000017, -0.08558164959999814, 0.0, 0.0, 0.0, 0.08558164959999992, 0.0, -0.17116329920000162, 0.0, -1.7763568394002505E-15, 0.17116329919999984, -0.08558164959999814, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.17116329919999984, -0.17116329919999984, 0.0, 0.0, 0.0, 0.08558164959999992, 0.0, -0.256744948799998, 0.3423265983999997, -0.17116329919999984, 0.08558164959999992, -5.4772255744, 10.783287849599999, -5.134898975999999, -0.5990715471999977, 0.25674494879999976, 0.25674494879999976, -1.7763568394002505E-15, -0.256744948799998, -0.08558164959999814, 0.0, 0.3423265983999997, -0.17116329919999984, 0.25674494879999976, -0.3423265983999997, -0.17116329919999806, 0.4279082479999996, -0.17116329919999806, 0.08558164959999814, -0.3423265983999979, 0.5990715471999994, -0.2567449487999962, -1.5404696928000003, 2.7386127872000046, -0.08558164959999992, -2.824194436800001, 1.711632992000002, 0.7702348463999975, -1.4548880431999986, 0.5134898975999995, 0.17116329919999806, -0.25674494879999976, 0.34232659840000146, -0.34232659840000146, 0.3423265983999979, -0.17116329920000162, -0.08558164959999814, 0.08558164959999814, 0.0, 0.0, 0.0, -0.08558164959999992, 0.17116329919999984, -1.7763568394002505E-15, -0.17116329919999984, -1.7763568394002505E-15, 0.17116329919999984, -0.08558164959999814, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.08558164959999992, -0.17116329919999984, 0.08558164959999814, 0.0, 0.0, 0.08558164959999992, -5.4772255744};
+    double res_rowout[128] = {5.64839, -0.0855816, -0.256745, 0.256745, 0.256745, 0.0855816, 0.0855816, -0.256745, -0.256745, -1.11022e-15, 8.88178e-16, -1.11022e-15, 8.88178e-16, -1.11022e-15, 8.88178e-16, -0.0855816, -0.0855816, -0.0855816, 0.0855816, 0.342327, 0.171163, 0.256745, 0.0855816, 0.0855816, 0.256745, -0.256745, -0.256745, -0.0855816, -0.0855816, -0.0855816, -0.0855816, -0.171163, -0.171163, -0.0855816, -0.0855816, 0.171163, 3.60822e-16, -0.171163, 0.171163, 0.256745, 0.0855816, -1.94289e-16, 1.80411e-15, -1.11022e-16, 1.88738e-15, 0.171163, 0.171163, 5.55112e-17, 2.05391e-15, -0.342327, -0.342327, -0.0855816, -0.0855816, 0.171163, 0.171163, -0.0855816, -0.0855816, 0.256745, 0.256745, -0.171163, -0.171163, -1.38778e-15, 0.171163, -1.38778e-15, -0.171163, 0.256745, 0.0855816, -0.256745, -0.0855816, -1.13798e-15, 8.60423e-16, 0.256745, 0.256745, 0.0855816, 0.0855816, -2.66454e-15, -6.66134e-16, -5.55112e-16, 1.44329e-15, -0.171163, 1.77636e-15, -0.51349, -0.855816, -0.427908, -0.0855816, 0.51349, 0.342327, 0.427908, 0.427908, 0.171163, 0.171163, 0.427908, 0.427908, -0.171163, -0.171163, -0.770235, -0.770235, 0.427908, 0.427908, -0.256745, -0.0855816, -0.0855816, -0.427908, 0.770235, 0.941398, -0.51349, -0.51349, -0.171163, 1.83187e-15, -1.66533e-16, -0.171163, -1.66533e-16, 2.16493e-15, -0.0855816, -0.0855816, 0.171163, 0.171163, -0.0855816, -0.0855816, -1.66533e-16, 2.16493e-15, -1.66533e-16, 2.16493e-15, -1.66533e-16, 2.16493e-15, -4.96374, -5.47723, 4.96374};
+    ComplexWaveFilter wf;
+    merge_1D(rowin, 128, rowout,  wf.hi, wf.gi);
+    for (int i = 0; i < 128; i++) {
+        if (abs(rowout[i] - res_rowout[i]) > 0.5) {
+            delete[](rowin);
+            delete[](rowout);
+            return false;
+        }
+    }
+    delete[](rowin);
+    delete[](rowout);
+    return true;
+}
+
+bool ComplexWavelet::testMerge() {
+    int nx = 2048;
+    int ny = 2048;
+    int i, j;
+    AbstractBuffer<double> * in = new AbstractBuffer<double>(nx, ny);
+    ifstream inputFile;
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/inputMerge.txt");
+    double current_number = 0.0;
+    for (i = 0; i < ny; i++) {
+        for (j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            in->element(i, j) = current_number;
+        }
+    }
+    inputFile.close();
+    inputFile.clear();
+    AbstractBuffer<double> * out;
+    out = merge(in, 0, 0);
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/outputMerge.txt");
+    for (i = 0; i < ny; i++) {
+        for (j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            if (abs(out->element(i, j) - current_number) > 0.5) {
+                inputFile.close();
+                inputFile.clear();
+                delete(in);
+                delete(out);
+                return false;
+            }
+        }
+    }
+    inputFile.close();
+    inputFile.clear();
+    delete(in);
+    delete(out);
+    return true;
+}
+
+bool ComplexWavelet::testSynthesis() {
+    int nx = 128;
+    int ny = 128;
+    AbstractBuffer<double> * coefftempRe = new AbstractContiniousBuffer<double>(nx, ny);
+    ifstream inputFile;
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/coefftempRe.txt");
+    double current_number;
+    for (int i = 0; i < ny; i++) {
+        for (int j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            coefftempRe->element(i, j) = current_number;
+        }
+    }
+    inputFile.close();
+    inputFile.clear();
+    AbstractBuffer<double> * coefftempIm = new AbstractContiniousBuffer<double>(nx, ny);
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/coefftempIm.txt");
+    for (int i = 0; i < ny; i++) {
+        for (int j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            coefftempIm->element(i, j) = current_number;
+        }
+    }
+    AbstractBuffer<double> * synthes = synthesis(coefftempRe, coefftempIm);
+    inputFile.close();
+    inputFile.clear();
+    delete(coefftempRe);
+    delete(coefftempIm);
+    inputFile.open("/home/olesia/Desktop/corecvs/test/focus_stack/synthesisResult.txt");
+    for (int i = 0; i < ny; i++) {
+        for (int j = 0; j < nx; j++) {
+            inputFile >> current_number;
+            if (abs(synthes->element(i, j) - current_number) > 0.5) {
+                delete(synthes);
+                inputFile.close();
+                inputFile.clear();
+                return false;
+            }
+        }
+    }
+    inputFile.close();
+    inputFile.clear();
+    delete(synthes);
+    return true;
+}
+
+void ComplexWavelet::test() {
+    cout << "Testing wavelet splitting" << endl;
+    if (testSplit())
+        cout << "wavelet splitting is correct" << endl;
+    else
+        cout << "wavelet splitting doesn't work right" << endl;
+
+    cout << "Testing split_1D" << endl;
+    if (testSplit_1D())
+        cout << "split_1D is correct" << endl;
+    else
+        cout << "split_1D doesn't work right" << endl;
+
+    cout << "Testing analysis" << endl;
+    if (testAnalysis())
+        cout << "analysis is correct" << endl;
+    else
+        cout << "analysis doesn't work right" << endl;
+
+    cout << "Testing merge_1D" << endl;
+    if (testMerge_1D())
+        cout << "merge_1D is correct" << endl;
+    else
+        cout << "merge_1D doesn't work right" << endl;
+
+    cout << "Testing merge" << endl;
+    if (testMerge())
+        cout << "merge is correct" << endl;
+    else
+        cout << "merge doesn't work right" << endl;
+
+    cout << "Testing synthesis" << endl;
+    if (testSynthesis())
+        cout << "synthesis is correct" << endl;
+    else
+        cout << "synthesis doesn't work right" << endl;
 }
