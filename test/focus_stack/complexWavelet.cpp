@@ -322,7 +322,7 @@ AbstractBuffer<double> * ComplexWavelet::split(AbstractBuffer<double> * in, int 
         double * rowout = new double[nx]{0};
         for (int y = 0; y < ny; y++) {
             for (int j = 0; j < nx; j++) {
-                rowin[j] = in->element(y, j);
+                rowin[j] = in->element(j, y);
             }
             if (type1 == 0)
                 split_1D(rowin, nx, rowout, wf.h, wf.g);
@@ -330,7 +330,7 @@ AbstractBuffer<double> * ComplexWavelet::split(AbstractBuffer<double> * in, int 
                 split_1D(rowin, nx, rowout, wf.hi, wf.gi);
 
             for (int j = 0; j < nx; j++) {
-                out->element(y, j) = rowout[j];
+                out->element(j, y) = rowout[j];
             }
         }
         delete[](rowin);
@@ -346,7 +346,7 @@ AbstractBuffer<double> * ComplexWavelet::split(AbstractBuffer<double> * in, int 
         double * colout = new double[ny]{0};
         for (int x = 0; x < nx; x++) {
             for (int j = 0; j < ny; j++) {
-                colin[j] = out->element(j, x);
+                colin[j] = out->element(x, j);
             }
             if (type2 == 0)
                 split_1D(colin, ny, colout, wf.h, wf.g);
@@ -354,7 +354,7 @@ AbstractBuffer<double> * ComplexWavelet::split(AbstractBuffer<double> * in, int 
             if (type2 == 1)
                 split_1D(colin, ny, colout, wf.hi, wf.gi);
             for (int j = 0; j < ny; j++) {
-                out->element(j, x) = colout[j];
+                out->element(x, j) = colout[j];
             }
         }
         delete[](colin);
