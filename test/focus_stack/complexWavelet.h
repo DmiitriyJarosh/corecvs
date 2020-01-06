@@ -27,12 +27,12 @@ public:
     void doStacking(vector<corecvs::RGB24Buffer*> & imageStack, corecvs::RGB24Buffer * result) override;
     ~ComplexWavelet() override {}
     static void test();
-    static bool testSplit();
-    static bool testSplit_1D();
-    static bool testAnalysis();
-    static bool testSynthesis();
-    static bool testMerge_1D();
-    static bool testMerge();
+    static bool test_split();
+    static bool test_split_1D();
+    static bool test_analysis();
+    static bool test_synthesis();
+    static bool test_merge_1D();
+    static bool test_merge();
 
 
 private:
