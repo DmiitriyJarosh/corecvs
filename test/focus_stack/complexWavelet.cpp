@@ -813,8 +813,8 @@ bool ComplexWavelet::test_merge_1D() {
 }
 
 bool ComplexWavelet::test_merge() {
-    int nx = 2048;
-    int ny = 2048;
+    int nx = 8;
+    int ny = 8;
     int i, j;
     double current_number;
     AbstractBuffer<double> * in = new AbstractBuffer<double>(nx, ny);
